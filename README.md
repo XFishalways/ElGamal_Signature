@@ -1,4 +1,4 @@
-# elgamal-digital-signiture
+# ElGamal Signature Implement
 
-implementing Elgamal Digital Signatures
+ElGamal Digital Signature using SHA-256 as hash function
 

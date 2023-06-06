@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 # @Author  : XFishalways
 # @Time    : 2023/6/6 15:30
-# @Function:
-"""
-
-such that pair(d) will return (p,a) containing a safe prime p with 
-d bits and a generator a for Z∗p.
-
-"""
-import random
+# @Function: generate a safe prime and a random primitive root, with calculating the execution time
 
 import Crypto.Util.number as num
+import random
+import time
 
 
 def pair(s):
+    start_time = time.time()
+
     while True:
         p = num.getPrime(s)
         safe_prime = 2 * p + 1
@@ -24,12 +21,8 @@ def pair(s):
         if (safe_prime - 1) % a != 1:
             break
 
-    return safe_prime, a
+    end_time = time.time()
+    execution_time = end_time - start_time
 
+    return safe_prime, a, execution_time
 
-#####################################################################
-# Tests
-
-if __name__ == "__main__":
-    print(pair(10))
-    print(pair(100))

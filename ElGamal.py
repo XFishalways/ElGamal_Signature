@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 # @Author  : XFishalways
 # @Time    : 2023/6/6 15:21
-# @Function:
+# @Function: ElGamal Digital Signature using SHA-256
 
 """
-ElGamal Digital Signature using SHA-256
-
-Algorithm
 Key Generation
 1. Select a large random prime p and a generator α of Z∗p.
 2. Generate a random integer x such that 1≤x≤p−2. 
@@ -33,14 +30,14 @@ A signature (r, s) produced by A can be verified as follows:
 import Crypto.Util.number as num
 from Crypto.Hash import SHA256
 import random
-import p3_pair
+import pair
 
 
 def egKey(s):
-    p, a = p3_pair.pair(s)
+    p, a, execution_time = pair.pair(s)
     x = random.randint(1, p - 2)
     y = pow(a, x, p)
-    return p, a, x, y
+    return p, a, x, y, execution_time
 
 
 """ 
@@ -50,7 +47,7 @@ Signature Generation
 
 def egGen(p, a, x, m):
     h = SHA256.new()
-    h.update(b'm')
+    h.update(m)
     m = int(h.hexdigest(), 35)
 
     while 1:
@@ -58,18 +55,19 @@ def egGen(p, a, x, m):
         if num.GCD(k, p - 1) == 1:
             break
     r = pow(a, k, p)
-    l = num.inverse(k, p - 1)
-    s = l * (m - x * r) % (p - 1)
+    t = num.inverse(k, p - 1)
+    s = t * (m - x * r) % (p - 1)
     return r, s
 
 
-""" Signature Verification 
+""" 
+Signature Verification 
 """
 
 
 def egVer(p, a, y, r, s, m):
     h = SHA256.new()
-    h.update(b'm')
+    h.update(m)
     m = int(h.hexdigest(), 35)
 
     if r < 1 or r > p - 1:
@@ -79,15 +77,40 @@ def egVer(p, a, y, r, s, m):
     return v1 == v2
 
 
-#####################################################################
-# Tests
-
 if __name__ == "__main__":
-    message = "John Says Hi"
-    print("Message: ", message)
-    prime, alpha, private, public = egKey(10)
-    print("prime,alpha,private,public", prime, alpha, private, public)
-    rr, ss = egGen(prime, alpha, private, message)
-    print("rr,ss", rr, ss)
-    isValid = egVer(prime, alpha, public, rr, ss, message)
+    message = input("enter your message: ")
+    binary_message = message.encode('utf-8')
+
+    # 将字节字符串转换为十六进制 再转换为整数存入文件中
+    hex_message = binary_message.hex()
+    int_message = int(hex_message, 16)
+    with open("plain.txt", "w") as out:
+        out.write(str(int_message))
+    out.close()
+    print("plain: ", int_message)
+    print("stored into plain.txt\n")
+
+    print("start initialization: \n")
+
+    prime, alpha, private, public, time = egKey(1024)
+    print("prime: %s\n"
+          "alpha: %s\n"
+          "private key: %s\n"
+          "public key: %s\n" % (prime, alpha, private, public))
+
+    print("Initialization execution time: ", time, "seconds\n")
+
+    with open("prime.txt", "w") as p:
+        p.write(str(prime))
+    with open("alpha.txt", "w") as p:
+        p.write(str(alpha))
+    with open("private.txt", "w") as p:
+        p.write(str(private))
+    with open("public.txt", "w") as p:
+        p.write(str(public))
+
+    print("start verification: \n")
+    rr, ss = egGen(prime, alpha, private, binary_message)
+    print("(r, s) = (%s, %s)\n" % (rr, ss))
+    isValid = egVer(prime, alpha, public, rr, ss, binary_message)
     print("Valid Signature: ", isValid)
